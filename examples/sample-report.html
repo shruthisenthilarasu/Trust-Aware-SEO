@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trust-Aware Web Audit Report — https://example.com</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --seo: #3fb950;
+      --ux: #58a6ff;
+      --trust: #d29922;
+      --high: #f85149;
+      --medium: #d29922;
+      --low: #3fb950;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 1.5rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 { font-size: 1.5rem; margin-top: 0; }
+    h2 { font-size: 1.2rem; margin-top: 2rem; color: var(--muted); }
+    a { color: var(--ux); }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .score-card.seo .value { color: var(--seo); }
+    .score-card.ux .value { color: var(--ux); }
+    .score-card.trust .value { color: var(--trust); }
+    .score-card .label { font-size: 0.85rem; color: var(--muted); }
+    .score-card .value { font-size: 2rem; font-weight: 700; }
+    .quick-wins {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .quick-wins h2 { margin-top: 0; }
+    .issue {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      background: var(--surface);
+    }
+    .issue h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .issue .tags { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .issue .tags .severity.high { color: var(--high); }
+    .issue .tags .severity.medium { color: var(--medium); }
+    .issue .tags .severity.low { color: var(--low); }
+    .issue .why, .issue .fix { margin-top: 0.75rem; font-size: 0.9rem; }
+    .issue .why strong, .issue .fix strong { color: var(--muted); }
+    .issue .url { font-size: 0.85rem; word-break: break-all; color: var(--muted); }
+    .category-section { margin-top: 2rem; }
+    .category-section h2 { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Trust-Aware Web Audit Report</h1>
+  <p class="meta">
+    Target: <a href="https://example.com">https://example.com</a><br />
+    Pages crawled: 1 · Total issues: 4
+  </p>
+
+  <h2>Executive summary</h2>
+  <div class="scores">
+    <div class="score-card seo">
+      <div class="label">SEO Health</div>
+      <div class="value">84.0</div>
+    </div>
+    <div class="score-card ux">
+      <div class="label">UX Clarity</div>
+      <div class="value">100.0</div>
+    </div>
+    <div class="score-card trust">
+      <div class="label">Trust Exposure</div>
+      <div class="value">100.0</div>
+      <div class="label" style="margin-top: 0.25rem;">(higher = less exposed)</div>
+    </div>
+  </div>
+
+  <div class="quick-wins">
+    <h2>Quick wins</h2>
+    <p class="meta">High-impact, low-effort fixes to tackle first.</p>
+    <div class="issue">
+      <h3>Missing meta description</h3>
+      <div class="tags">
+        <span class="severity medium">Medium</span>
+        · Both · Quick win
+      </div>
+      <p>Page has no meta description.</p>
+      <p class="why"><strong>Why it matters:</strong> Search engines and users rely on descriptions for snippets. Missing descriptions can hurt CTR and clarity.</p>
+      <p class="fix"><strong>How to fix:</strong> Add a &lt;meta name="description" content="..."&gt; with a concise 150–160 character summary of the page.</p>
+      <p class="url">https://example.com</p>
+    </div>
+    <div class="issue">
+      <h3>Missing H1 heading</h3>
+      <div class="tags">
+        <span class="severity medium">Medium</span>
+        · Both · Quick win
+      </div>
+      <p>Page has no H1 heading.</p>
+      <p class="why"><strong>Why it matters:</strong> H1 helps search engines and users understand the main topic. One clear H1 improves SEO and accessibility.</p>
+      <p class="fix"><strong>How to fix:</strong> Add a single &lt;h1&gt; that describes the main purpose of the page.</p>
+      <p class="url">https://example.com</p>
+    </div>
+  </div>
+
+  <h2>Issues by category</h2>
+
+  <div class="category-section">
+    <h2>SEO</h2>
+    <div class="issue">
+      <h3>Missing meta description</h3>
+      <div class="tags">
+        <span class="severity medium">Medium</span>
+        · Both · Quick win
+      </div>
+      <p>Page has no meta description.</p>
+      <p class="why"><strong>Why it matters:</strong> Search engines and users rely on descriptions for snippets. Missing descriptions can hurt CTR and clarity.</p>
+      <p class="fix"><strong>How to fix:</strong> Add a &lt;meta name="description" content="..."&gt; with a concise 150–160 character summary of the page.</p>
+      <p class="url">https://example.com</p>
+    </div>
+    <div class="issue">
+      <h3>Missing H1 heading</h3>
+      <div class="tags">
+        <span class="severity medium">Medium</span>
+        · Both · Quick win
+      </div>
+      <p>Page has no H1 heading.</p>
+      <p class="why"><strong>Why it matters:</strong> H1 helps search engines and users understand the main topic. One clear H1 improves SEO and accessibility.</p>
+      <p class="fix"><strong>How to fix:</strong> Add a single &lt;h1&gt; that describes the main purpose of the page.</p>
+      <p class="url">https://example.com</p>
+    </div>
+    <div class="issue">
+      <h3>Images missing alt text</h3>
+      <div class="tags">
+        <span class="severity medium">Medium</span>
+        · Humans · Quick win
+      </div>
+      <p>1 image(s) without alt text.</p>
+      <p class="why"><strong>Why it matters:</strong> Alt text is essential for accessibility and gives search engines context. Missing alt hurts screen reader users and image SEO.</p>
+      <p class="fix"><strong>How to fix:</strong> Add meaningful alt attributes to every &lt;img&gt;. Use alt="" only for purely decorative images.</p>
+      <p class="url">https://example.com</p>
+    </div>
+  </div>
+
+  <p class="meta" style="margin-top: 2rem;">
+    Generated by Trust-Aware Web Audit Tool · MAGEN Trust
+  </p>
+</body>
+</html>
