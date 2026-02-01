@@ -1,0 +1,16 @@
+# Trust-Aware Web Audit Tool
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# Optional: Lighthouse / performance (can add later)
+# lighthouse>=0.1.0  # or use Lighthouse CI / PageSpeed API
+
+# Report generation
+jinja2>=3.1.0
+# Optional PDF: pip install weasyprint (adds system deps on some platforms)
+
+# Dev / type checking
+python-dotenv>=1.0.0

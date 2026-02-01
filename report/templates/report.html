@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trust-Aware Web Audit Report — {{ target_url }}</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --seo: #3fb950;
+      --ux: #58a6ff;
+      --trust: #d29922;
+      --high: #f85149;
+      --medium: #d29922;
+      --low: #3fb950;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 1.5rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 { font-size: 1.5rem; margin-top: 0; }
+    h2 { font-size: 1.2rem; margin-top: 2rem; color: var(--muted); }
+    a { color: var(--ux); }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .score-card.seo .value { color: var(--seo); }
+    .score-card.ux .value { color: var(--ux); }
+    .score-card.trust .value { color: var(--trust); }
+    .score-card .label { font-size: 0.85rem; color: var(--muted); }
+    .score-card .value { font-size: 2rem; font-weight: 700; }
+    .quick-wins {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .quick-wins h2 { margin-top: 0; }
+    .issue {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      background: var(--surface);
+    }
+    .issue h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .issue .tags { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .issue .tags .severity.high { color: var(--high); }
+    .issue .tags .severity.medium { color: var(--medium); }
+    .issue .tags .severity.low { color: var(--low); }
+    .issue .why, .issue .fix { margin-top: 0.75rem; font-size: 0.9rem; }
+    .issue .why strong, .issue .fix strong { color: var(--muted); }
+    .issue .url { font-size: 0.85rem; word-break: break-all; color: var(--muted); }
+    .category-section { margin-top: 2rem; }
+    .category-section h2 { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Trust-Aware Web Audit Report</h1>
+  <p class="meta">
+    Target: <a href="{{ target_url }}">{{ target_url }}</a><br />
+    Pages crawled: {{ pages_crawled }} · Total issues: {{ total_issues }}
+  </p>
+
+  <h2>Executive summary</h2>
+  <div class="scores">
+    <div class="score-card seo">
+      <div class="label">SEO Health</div>
+      <div class="value">{{ "%.1f"|format(seo_score) }}</div>
+    </div>
+    <div class="score-card ux">
+      <div class="label">UX Clarity</div>
+      <div class="value">{{ "%.1f"|format(ux_score) }}</div>
+    </div>
+    <div class="score-card trust">
+      <div class="label">Trust Exposure</div>
+      <div class="value">{{ "%.1f"|format(trust_score) }}</div>
+      <div class="label" style="margin-top: 0.25rem;">(higher = less exposed)</div>
+    </div>
+  </div>
+
+  {% if quick_wins %}
+  <div class="quick-wins">
+    <h2>Quick wins</h2>
+    <p class="meta">High-impact, low-effort fixes to tackle first.</p>
+    {% for issue in quick_wins %}
+    <div class="issue">
+      <h3>{{ issue.title }}</h3>
+      <div class="tags">
+        <span class="severity {{ issue.severity.value|lower }}">{{ issue.severity.value }}</span>
+        · {{ issue.impact.value }} · {{ issue.fix_effort.value }}
+      </div>
+      <p>{{ issue.description }}</p>
+      <p class="why"><strong>Why it matters:</strong> {{ issue.why_it_matters }}</p>
+      <p class="fix"><strong>How to fix:</strong> {{ issue.how_to_fix }}</p>
+      {% if issue.affected_url %}<p class="url">{{ issue.affected_url }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h2>Issues by category</h2>
+
+  {% for category, issues in issues_by_category.items() %}
+  {% if issues %}
+  <div class="category-section">
+    <h2>{{ category }}</h2>
+    {% for issue in issues %}
+    <div class="issue">
+      <h3>{{ issue.title }}</h3>
+      <div class="tags">
+        <span class="severity {{ issue.severity.value|lower }}">{{ issue.severity.value }}</span>
+        · {{ issue.impact.value }} · {{ issue.fix_effort.value }}
+      </div>
+      <p>{{ issue.description }}</p>
+      <p class="why"><strong>Why it matters:</strong> {{ issue.why_it_matters }}</p>
+      <p class="fix"><strong>How to fix:</strong> {{ issue.how_to_fix }}</p>
+      {% if issue.affected_url %}<p class="url">{{ issue.affected_url }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  <p class="meta" style="margin-top: 2rem;">
+    Generated by Trust-Aware Web Audit Tool · MAGEN Trust
+  </p>
+</body>
+</html>
