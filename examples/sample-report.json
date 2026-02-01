@@ -1,0 +1,40 @@
+{
+  "target_url": "https://example.com",
+  "pages_crawled": 1,
+  "scores": {
+    "seo_health": 84.0,
+    "ux_clarity": 100.0,
+    "trust_exposure": 100.0
+  },
+  "total_issues": 4,
+  "quick_wins_count": 2,
+  "issues": [
+    {
+      "id": "seo-missing-meta-description",
+      "title": "Missing meta description",
+      "category": "SEO",
+      "severity": "Medium",
+      "impact": "Both",
+      "fix_effort": "Quick win",
+      "affected_url": "https://example.com"
+    },
+    {
+      "id": "seo-missing-h1",
+      "title": "Missing H1 heading",
+      "category": "SEO",
+      "severity": "Medium",
+      "impact": "Both",
+      "fix_effort": "Quick win",
+      "affected_url": "https://example.com"
+    },
+    {
+      "id": "seo-missing-alt",
+      "title": "Images missing alt text",
+      "category": "SEO",
+      "severity": "Medium",
+      "impact": "Humans",
+      "fix_effort": "Quick win",
+      "affected_url": "https://example.com"
+    }
+  ]
+}
