@@ -53,11 +53,11 @@ def crawl_site(seed_url: str, max_pages: int | None = None) -> List[PageData]:
             continue
         visited.add(url)
 
-        status_code, html = fetch_page(url, timeout=timeout, user_agent=user_agent)
+        status_code, html, load_time_ms = fetch_page(url, timeout=timeout, user_agent=user_agent)
         if status_code != 200 or not html:
             continue
 
-        page_data = parse_page(url, html, status_code=status_code)
+        page_data = parse_page(url, html, status_code=status_code, load_time_ms=load_time_ms)
         results.append(page_data)
 
         # Queue same-domain links we haven't seen

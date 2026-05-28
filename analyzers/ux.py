@@ -17,7 +17,23 @@ class UXAnalyzer(BaseAnalyzer):
         issues: List[AuditIssue] = []
 
         for page in pages:
-            # 1) Infinite scroll without pagination fallback (heuristic: we detect scroll patterns in HTML)
+            # 1) Slow server response
+            if page.load_time_ms is not None and page.load_time_ms > 3000:
+                issues.append(AuditIssue(
+                    id="ux-slow-load",
+                    title="Slow page load time",
+                    description=f"Page took {page.load_time_ms:.0f}ms to respond — over the 3s threshold.",
+                    category=self.category,
+                    severity=Severity.HIGH if page.load_time_ms > 6000 else Severity.MEDIUM,
+                    impact=Impact.HUMANS,
+                    fix_effort=FixEffort.MODERATE,
+                    why_it_matters="Users abandon pages that take over 3 seconds to load. Bots are unaffected. Slow load times also hurt Core Web Vitals and search rankings.",
+                    how_to_fix="Investigate server response time, enable caching, compress assets, and consider a CDN.",
+                    affected_url=page.url,
+                    raw_value=f"{page.load_time_ms:.0f}ms",
+                ))
+
+            # 2) Infinite scroll without pagination fallback (heuristic: we detect scroll patterns in HTML)
             if page.has_infinite_scroll_indicators:
                 issues.append(
                     AuditIssue(
@@ -34,7 +50,7 @@ class UXAnalyzer(BaseAnalyzer):
                     )
                 )
 
-            # 2) Very large HTML (proxy for heavy JS / slow for humans)
+            # 3) Very large HTML (proxy for heavy JS / slow for humans)
             if page.html_snippet and len(page.html_snippet) > 500_000:
                 issues.append(
                     AuditIssue(
@@ -52,7 +68,7 @@ class UXAnalyzer(BaseAnalyzer):
                     )
                 )
 
-            # 3) Critical content only in JS (heuristic: little text in first chunk)
+            # 4) Critical content only in JS (heuristic: little text in first chunk)
             if page.html_snippet:
                 text_len = sum(len(t) for t in page.html_snippet.split(">") if "<" not in t)
                 if len(page.html_snippet) > 10_000 and text_len < 500:

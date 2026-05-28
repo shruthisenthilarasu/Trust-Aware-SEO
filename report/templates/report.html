@@ -77,6 +77,37 @@
     .issue .url { font-size: 0.85rem; word-break: break-all; color: var(--muted); }
     .category-section { margin-top: 2rem; }
     .category-section h2 { margin-bottom: 1rem; }
+    .issue-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+    .issue-header h3 { margin: 0 0 0.5rem 0; font-size: 1rem; flex: 1; }
+    .count-badge {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      background: var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      white-space: nowrap;
+      align-self: center;
+    }
+    .affected-urls summary {
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      margin-top: 0.5rem;
+      user-select: none;
+    }
+    .affected-urls summary:hover { color: var(--text); }
+    .affected-urls ul {
+      margin: 0.4rem 0 0 1rem;
+      padding: 0;
+      list-style: disc;
+    }
+    .affected-urls li {
+      font-size: 0.8rem;
+      color: var(--muted);
+      word-break: break-all;
+      margin-bottom: 0.2rem;
+    }
   </style>
 </head>
 <body>
@@ -106,23 +137,45 @@
     </div>
   </div>
 
+  {% macro render_issue(issue) %}
+  <div class="issue">
+    <div class="issue-header">
+      <div style="flex:1">
+        <h3>{{ issue.title }}</h3>
+        <div class="tags">
+          <span class="severity {{ issue.severity.value|lower }}">{{ issue.severity.value }}</span>
+          · {{ issue.impact.value }} · {{ issue.fix_effort.value }}
+        </div>
+      </div>
+      {% if issue.count > 1 %}
+      <span class="count-badge">{{ issue.count }} pages</span>
+      {% endif %}
+    </div>
+    <p>{{ issue.description }}</p>
+    <p class="why"><strong>Why it matters:</strong> {{ issue.why_it_matters }}</p>
+    <p class="fix"><strong>How to fix:</strong> {{ issue.how_to_fix }}</p>
+    {% if issue.affected_urls %}
+      {% if issue.count == 1 %}
+        <p class="url">{{ issue.affected_urls[0] }}</p>
+      {% else %}
+        <details class="affected-urls">
+          <summary>{{ issue.count }} affected pages</summary>
+          <ul>
+            {% for url in issue.affected_urls %}
+            <li>{{ url }}</li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% endmacro %}
+
   {% if quick_wins %}
   <div class="quick-wins">
     <h2>Quick wins</h2>
     <p class="meta">High-impact, low-effort fixes to tackle first.</p>
-    {% for issue in quick_wins %}
-    <div class="issue">
-      <h3>{{ issue.title }}</h3>
-      <div class="tags">
-        <span class="severity {{ issue.severity.value|lower }}">{{ issue.severity.value }}</span>
-        · {{ issue.impact.value }} · {{ issue.fix_effort.value }}
-      </div>
-      <p>{{ issue.description }}</p>
-      <p class="why"><strong>Why it matters:</strong> {{ issue.why_it_matters }}</p>
-      <p class="fix"><strong>How to fix:</strong> {{ issue.how_to_fix }}</p>
-      {% if issue.affected_url %}<p class="url">{{ issue.affected_url }}</p>{% endif %}
-    </div>
-    {% endfor %}
+    {% for issue in quick_wins %}{{ render_issue(issue) }}{% endfor %}
   </div>
   {% endif %}
 
@@ -132,19 +185,7 @@
   {% if issues %}
   <div class="category-section">
     <h2>{{ category }}</h2>
-    {% for issue in issues %}
-    <div class="issue">
-      <h3>{{ issue.title }}</h3>
-      <div class="tags">
-        <span class="severity {{ issue.severity.value|lower }}">{{ issue.severity.value }}</span>
-        · {{ issue.impact.value }} · {{ issue.fix_effort.value }}
-      </div>
-      <p>{{ issue.description }}</p>
-      <p class="why"><strong>Why it matters:</strong> {{ issue.why_it_matters }}</p>
-      <p class="fix"><strong>How to fix:</strong> {{ issue.how_to_fix }}</p>
-      {% if issue.affected_url %}<p class="url">{{ issue.affected_url }}</p>{% endif %}
-    </div>
-    {% endfor %}
+    {% for issue in issues %}{{ render_issue(issue) }}{% endfor %}
   </div>
   {% endif %}
   {% endfor %}

@@ -16,7 +16,70 @@ class SEOAnalyzer(BaseAnalyzer):
     def analyze(self, pages: List[PageData]) -> List[AuditIssue]:
         issues: List[AuditIssue] = []
 
-        # 1) Missing or duplicate meta description
+        # 1) Page title checks
+        seen_titles: set[str] = set()
+        for page in pages:
+            t = (page.title or "").strip()
+            if not t:
+                issues.append(AuditIssue(
+                    id="seo-missing-title",
+                    title="Missing page title",
+                    description="Page has no <title> tag.",
+                    category=self.category,
+                    severity=Severity.HIGH,
+                    impact=Impact.BOTH,
+                    fix_effort=FixEffort.QUICK_WIN,
+                    why_it_matters="The page title is the most important on-page SEO element and the first thing users see in search results.",
+                    how_to_fix="Add a descriptive <title> tag (50–60 characters) inside <head>.",
+                    affected_url=page.url,
+                ))
+            elif len(t) < 10:
+                issues.append(AuditIssue(
+                    id="seo-title-too-short",
+                    title="Page title too short",
+                    description=f"Title \"{t}\" is only {len(t)} characters — unlikely to be descriptive.",
+                    category=self.category,
+                    severity=Severity.MEDIUM,
+                    impact=Impact.BOTH,
+                    fix_effort=FixEffort.QUICK_WIN,
+                    why_it_matters="Short titles miss the opportunity to include keywords and give users meaningful context in search results.",
+                    how_to_fix="Expand the title to 50–60 characters, including the primary keyword and brand name.",
+                    affected_url=page.url,
+                    raw_value=t,
+                ))
+            elif len(t) > 60:
+                issues.append(AuditIssue(
+                    id="seo-title-too-long",
+                    title="Page title too long",
+                    description=f"Title is {len(t)} characters — likely truncated in search results.",
+                    category=self.category,
+                    severity=Severity.LOW,
+                    impact=Impact.BOTH,
+                    fix_effort=FixEffort.QUICK_WIN,
+                    why_it_matters="Search engines typically display ~60 characters. Longer titles get cut off, hiding your message.",
+                    how_to_fix="Trim the title to under 60 characters, keeping the most important keyword near the front.",
+                    affected_url=page.url,
+                    raw_value=t[:80],
+                ))
+
+            if t and t in seen_titles:
+                issues.append(AuditIssue(
+                    id="seo-duplicate-title",
+                    title="Duplicate page title",
+                    description="Same title used on another page.",
+                    category=self.category,
+                    severity=Severity.MEDIUM,
+                    impact=Impact.BOTH,
+                    fix_effort=FixEffort.QUICK_WIN,
+                    why_it_matters="Duplicate titles make pages look identical to search engines, splitting ranking signals and confusing users.",
+                    how_to_fix="Give each page a unique title that reflects its specific content.",
+                    affected_url=page.url,
+                    raw_value=t[:80],
+                ))
+            elif t:
+                seen_titles.add(t)
+
+        # 3) Missing or duplicate meta description
         seen_descriptions: set[str] = set()
         for page in pages:
             if not page.meta_description or not page.meta_description.strip():
@@ -53,7 +116,7 @@ class SEOAnalyzer(BaseAnalyzer):
             else:
                 seen_descriptions.add(page.meta_description.strip())
 
-        # 2) Missing or multiple H1
+        # 4) Missing or multiple H1
         for page in pages:
             h1s = [h for h in page.headings if h["tag"] == "h1"]
             if not h1s:
@@ -88,7 +151,7 @@ class SEOAnalyzer(BaseAnalyzer):
                     )
                 )
 
-        # 3) Images missing alt text
+        # 5) Images missing alt text
         for page in pages:
             missing_alt = [img for img in page.images if img.get("alt") is None or not str(img.get("alt", "")).strip()]
             if missing_alt:

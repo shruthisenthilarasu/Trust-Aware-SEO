@@ -1,5 +1,6 @@
 """Parse HTML into structured page data for audit checks."""
 
+import time
 from typing import List, Optional
 from urllib.parse import urljoin, urlparse
 
@@ -9,7 +10,7 @@ from bs4 import BeautifulSoup
 from models import PageData
 
 
-def parse_page(url: str, html: str, status_code: int = 200) -> PageData:
+def parse_page(url: str, html: str, status_code: int = 200, load_time_ms: Optional[float] = None) -> PageData:
     """
     Parse raw HTML into PageData for analyzers.
 
@@ -97,6 +98,7 @@ def parse_page(url: str, html: str, status_code: int = 200) -> PageData:
         internal_links=list(dict.fromkeys(internal_links)),
         forms=forms,
         images=images,
+        load_time_ms=load_time_ms,
         html_snippet=html_snippet,
         has_infinite_scroll_indicators=has_infinite_scroll_indicators,
     )
@@ -114,9 +116,11 @@ def fetch_page(url: str, timeout: int = 15, user_agent: Optional[str] = None) ->
     Returns:
         (status_code, response text). On failure, (0, "").
     """
-    headers = {"User-Agent": user_agent or "MAGEN-WebAudit/1.0"}
+    headers = {"User-Agent": user_agent or "TrustAudit/1.0"}
     try:
+        start = time.monotonic()
         r = requests.get(url, timeout=timeout, headers=headers)
-        return r.status_code, r.text
+        elapsed_ms = (time.monotonic() - start) * 1000
+        return r.status_code, r.text, elapsed_ms
     except requests.RequestException:
-        return 0, ""
+        return 0, "", None

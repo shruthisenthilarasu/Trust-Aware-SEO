@@ -1,5 +1,6 @@
 """Generate HTML audit report from AuditReport."""
 
+from collections import defaultdict
 from pathlib import Path
 from typing import List
 
@@ -21,11 +22,38 @@ def generate_index_html() -> str:
     return _make_env().get_template("index.html").render()
 
 
-def _group_issues_by_category(issues: List[AuditIssue]) -> dict[str, List[AuditIssue]]:
-    out: dict[str, List[AuditIssue]] = {"SEO": [], "UX": [], "Trust": []}
-    for i in issues:
-        if i.category in out:
-            out[i.category].append(i)
+def _rollup_issues(issues: List[AuditIssue]) -> List[dict]:
+    """Group issues of the same type into rolled-up findings."""
+    groups: dict[str, List[AuditIssue]] = defaultdict(list)
+    for issue in issues:
+        groups[issue.id].append(issue)
+
+    rollups = []
+    for group in groups.values():
+        first = group[0]
+        affected_urls = [i.affected_url for i in group if i.affected_url]
+        rollups.append({
+            "id": first.id,
+            "title": first.title,
+            "description": first.description,
+            "category": first.category,
+            "severity": first.severity,
+            "impact": first.impact,
+            "fix_effort": first.fix_effort,
+            "why_it_matters": first.why_it_matters,
+            "how_to_fix": first.how_to_fix,
+            "count": len(group),
+            "affected_urls": affected_urls,
+            "raw_value": first.raw_value,
+        })
+    return rollups
+
+
+def _group_rollups_by_category(rollups: List[dict]) -> dict[str, List[dict]]:
+    out: dict[str, List[dict]] = {"SEO": [], "UX": [], "Trust": []}
+    for r in rollups:
+        if r["category"] in out:
+            out[r["category"]].append(r)
     return out
 
 
@@ -41,7 +69,9 @@ def generate_html_report(report: AuditReport) -> str:
     """
     template = _make_env().get_template("report.html")
 
-    grouped = _group_issues_by_category(report.issues)
+    rollups = _rollup_issues(report.issues)
+    grouped = _group_rollups_by_category(rollups)
+    quick_win_rollups = _rollup_issues(report.quick_wins)
     scores = report.scores
 
     return template.render(
@@ -51,6 +81,6 @@ def generate_html_report(report: AuditReport) -> str:
         ux_score=scores.ux_clarity,
         trust_score=scores.trust_exposure,
         issues_by_category=grouped,
-        quick_wins=report.quick_wins,
-        total_issues=len(report.issues),
+        quick_wins=quick_win_rollups,
+        total_issues=len(rollups),
     )
