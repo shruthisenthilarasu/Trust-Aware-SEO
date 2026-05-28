@@ -253,7 +253,7 @@
     </div>
 
     <div class="form-card">
-      <form id="audit-form" action="/audit" method="get" onsubmit="return startAudit(this)">
+      <form id="audit-form" onsubmit="return startAudit(this)">
         <div class="input-row">
           <input
             type="url"
@@ -306,44 +306,100 @@
 
   <!-- Loading overlay -->
   <div id="loading">
-    <div class="spinner"></div>
+    <div class="spinner" id="loading-spinner"></div>
     <div class="loading-text">
       <strong id="loading-url"></strong>
-      Crawling pages and running analysis…
+      <span id="loading-msg">Crawling pages and running analysis…</span>
     </div>
-    <div class="loading-steps">
+    <div class="loading-steps" id="loading-steps">
       <div class="step"><div class="step-dot" id="step-crawl"></div>Crawling pages</div>
       <div class="step"><div class="step-dot" id="step-analyze"></div>Running analyzers</div>
       <div class="step"><div class="step-dot" id="step-report"></div>Generating report</div>
     </div>
+    <div id="loading-error" style="display:none; color:var(--high); font-size:0.9rem; max-width:320px; text-align:center; line-height:1.5;"></div>
+    <button id="retry-btn" onclick="resetLoading()" style="display:none; margin-top:0.75rem; background:none; border:1px solid var(--border); border-radius:8px; color:var(--muted); cursor:pointer; font-size:0.85rem; padding:0.4rem 1rem;">← Try again</button>
   </div>
 
   <script>
     function toggleAdvanced() {
-      const row = document.getElementById('advanced-row');
-      row.classList.toggle('open');
+      document.getElementById('advanced-row').classList.toggle('open');
     }
 
     function startAudit(form) {
       const url = form.querySelector('input[name="url"]').value;
+      const maxPages = form.querySelector('input[name="max_pages"]').value;
+
       document.getElementById('loading-url').textContent = url;
       document.getElementById('loading').classList.add('active');
-      animateSteps();
-      return true; // let the form submit normally
+      setStep('step-crawl', 'active');
+
+      const params = new URLSearchParams({ url });
+      if (maxPages) params.set('max_pages', maxPages);
+
+      fetch('/audit/start?' + params)
+        .then(r => r.ok ? r.json() : r.json().then(d => Promise.reject(d.detail || 'Failed to start audit')))
+        .then(({ job_id }) => poll(job_id))
+        .catch(showError);
+
+      return false;
     }
 
-    function animateSteps() {
-      const steps = ['step-crawl', 'step-analyze', 'step-report'];
-      let i = 0;
-      function tick() {
-        if (i > 0) document.getElementById(steps[i - 1]).className = 'step-dot done';
-        if (i < steps.length) {
-          document.getElementById(steps[i]).className = 'step-dot active';
-          i++;
-          setTimeout(tick, 4000);
-        }
-      }
-      tick();
+    function poll(jobId) {
+      const interval = setInterval(() => {
+        fetch('/audit/status/' + jobId)
+          .then(r => r.json())
+          .then(({ status, phase, error }) => {
+            if (status === 'running' || status === 'pending') {
+              updatePhase(phase);
+            } else if (status === 'done') {
+              clearInterval(interval);
+              setStep('step-crawl', 'done');
+              setStep('step-analyze', 'done');
+              setStep('step-report', 'done');
+              window.location.href = '/audit/result/' + jobId;
+            } else if (status === 'error') {
+              clearInterval(interval);
+              showError(error || 'Audit failed.');
+            }
+          })
+          .catch(err => { clearInterval(interval); showError(String(err)); });
+      }, 2000);
+    }
+
+    const phaseSteps = {
+      crawling:  { active: 'step-crawl',   done: [] },
+      analyzing: { active: 'step-analyze',  done: ['step-crawl'] },
+      reporting: { active: 'step-report',   done: ['step-crawl', 'step-analyze'] },
+    };
+
+    function updatePhase(phase) {
+      const cfg = phaseSteps[phase];
+      if (!cfg) return;
+      cfg.done.forEach(id => setStep(id, 'done'));
+      setStep(cfg.active, 'active');
+    }
+
+    function setStep(id, state) {
+      document.getElementById(id).className = 'step-dot ' + state;
+    }
+
+    function showError(msg) {
+      document.getElementById('loading-spinner').style.display = 'none';
+      document.getElementById('loading-steps').style.display = 'none';
+      document.getElementById('loading-msg').textContent = 'Something went wrong.';
+      document.getElementById('loading-error').textContent = msg;
+      document.getElementById('loading-error').style.display = 'block';
+      document.getElementById('retry-btn').style.display = 'inline-block';
+    }
+
+    function resetLoading() {
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('loading-spinner').style.display = '';
+      document.getElementById('loading-steps').style.display = '';
+      document.getElementById('loading-msg').textContent = 'Crawling pages and running analysis…';
+      document.getElementById('loading-error').style.display = 'none';
+      document.getElementById('retry-btn').style.display = 'none';
+      ['step-crawl','step-analyze','step-report'].forEach(id => setStep(id, ''));
     }
   </script>
 
