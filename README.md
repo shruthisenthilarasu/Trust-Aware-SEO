@@ -1,6 +1,6 @@
 # Trust-Aware Web Audit Tool
 
-A web audit tool for **MAGEN Trust** that goes beyond traditional SEO and UX checks to surface **trust and bot exposure** issues. It identifies patterns that make sites easy for automation to scrape while frustrating real users—exactly the surface area MAGEN protects.
+A web audit tool that goes beyond traditional SEO and UX checks to surface **trust and bot exposure** issues. Originally prototyped as a feature for a cybersecurity startup based in San Antonio, TX. It identifies patterns that make sites easy for automation to scrape while frustrating real users.
 
 ## 🎯 Why This Tool Exists
 
@@ -10,7 +10,7 @@ Traditional SEO audits miss a critical dimension: **trust and bot exposure**. Ma
 - **Vulnerable to automation without realizing it** — scraping, spam, and data harvesting thrive where there’s no rate limiting or friction.
 - **Unintentionally widening the human vs. bot gap** — JS-heavy content, infinite scroll without fallback, and slow loads affect humans more than crawlers.
 
-This tool bridges SEO/UX analysis with security thinking—identifying patterns that affect both user experience and site vulnerability. Built with inspiration from [MAGEN Trust](https://magentrust.com)’s work on distinguishing human vs. automated behavior.
+This tool bridges SEO/UX analysis with security thinking — identifying patterns that affect both user experience and site vulnerability.
 
 ## What it does
 
@@ -112,7 +112,7 @@ python cli.py https://example.com --max-pages 10 --output report.html
 ## Configuration
 
 - **Max pages**: Set `AUDIT_MAX_PAGES` (default 50) or pass `max_pages` in the API/CLI.
-- **User-Agent**: Defined in `config.py` (MAGEN-WebAudit/1.0).
+- **User-Agent**: Defined in `config.py`.
 
 ## Adding new checks
 
@@ -122,4 +122,4 @@ python cli.py https://example.com --max-pages 10 --output report.html
 
 ---
 
-Built for MAGEN Trust — explainable trust at the web layer.
+Originally prototyped as a feature for a cybersecurity startup in San Antonio, TX.
