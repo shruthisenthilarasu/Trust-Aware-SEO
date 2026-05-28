@@ -11,7 +11,7 @@ from config import get_config
 from crawler import crawl_site
 from analyzers import run_all_analyzers
 from scoring import compute_scores, get_quick_wins
-from report import generate_html_report
+from report import generate_html_report, generate_index_html
 from models import AuditReport, AuditScores
 
 app = FastAPI(
@@ -46,14 +46,14 @@ def run_audit(target_url: str, max_pages: int | None = None) -> AuditReport:
     )
 
 
-@app.get("/")
-def root() -> dict:
-    """Health / info."""
-    return {
-        "name": "Trust-Aware Web Audit Tool",
-        "docs": "/docs",
-        "audit": "GET /audit?url=<target_url>",
-    }
+@app.get("/", response_class=HTMLResponse)
+def root() -> HTMLResponse:
+    return HTMLResponse(generate_index_html())
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok", "docs": "/docs", "audit": "GET /audit?url=<target_url>"}
 
 
 @app.get("/audit", response_class=HTMLResponse)
