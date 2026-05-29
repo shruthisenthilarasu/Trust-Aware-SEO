@@ -32,6 +32,27 @@ Traditional audits catch missing alt text. This tool also catches:
 
 ---
 
+## Deploy to Render
+
+1. Fork or push this repo to GitHub
+2. Go to [render.com](https://render.com) → **New** → **Web Service**
+3. Connect your GitHub repo
+4. Render detects the `Dockerfile` automatically — leave settings as defaults
+5. Click **Deploy**
+
+Your app will be live at `https://<your-service>.onrender.com` in a few minutes.
+
+> **Note:** The free tier spins down after 15 minutes of inactivity. The first request after idle takes ~30 seconds to cold-start. This is a Render free tier limitation, not a bug.
+
+**Environment variables** (set in Render dashboard → Environment):
+
+| Variable | Default | Description |
+|---|---|---|
+| `AUDIT_MAX_PAGES` | `20` | Keep this at 20 or lower on the free tier to avoid timeouts |
+| `DEBUG` | `false` | |
+
+---
+
 ## Quick start
 
 ```bash

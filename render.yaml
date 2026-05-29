@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: trust-aware-seo-audit
+    runtime: docker
+    plan: free
+    envVars:
+      - key: AUDIT_MAX_PAGES
+        value: "20"
+      - key: DEBUG
+        value: "false"
