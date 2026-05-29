@@ -1,5 +1,7 @@
 # Trust-Aware Web Audit Tool
 
+**Live demo:** https://trust-aware-seo.onrender.com
+
 Audit any website for **SEO health**, **UX clarity**, and **trust/bot exposure** — the dimension traditional SEO tools miss entirely.
 
 Originally prototyped as a feature for a cybersecurity startup in San Antonio, TX. The core insight: most SEO audits don't ask whether your site is *easier for bots to use than for real people*. This one does.
