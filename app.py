@@ -156,7 +156,7 @@ def audit_json(
         "scores": {
             "seo_health": report.scores.seo_health,
             "ux_clarity": report.scores.ux_clarity,
-            "trust_exposure": report.scores.trust_exposure,
+            "trust_safety": report.scores.trust_safety,
         },
         "total_issues": len(report.issues),
         "quick_wins_count": len(report.quick_wins),

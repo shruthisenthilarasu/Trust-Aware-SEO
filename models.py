@@ -65,7 +65,7 @@ class AuditScores:
 
     seo_health: float
     ux_clarity: float
-    trust_exposure: float  # lower = less exposed (better)
+    trust_safety: float  # 100 = no trust issues (best), 0 = many high-severity issues
 
 
 @dataclass

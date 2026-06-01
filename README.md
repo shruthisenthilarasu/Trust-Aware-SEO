@@ -16,9 +16,35 @@ Submit a URL and get back a prioritized HTML report with three scores (0–100) 
 |---|---|
 | **SEO Health** | Meta tags, headings, alt text, crawlability |
 | **UX Clarity** | Page weight, JS-heavy content, navigation friction |
-| **Trust Exposure** | Open endpoints, predictable URLs, form vulnerabilities, scraping surfaces |
+| **Trust Safety** | Open endpoints, predictable URLs, form vulnerabilities, scraping surfaces |
 
 Each finding explains what's wrong, who it affects (humans, bots, or both), and exactly how to fix it. High-impact, low-effort fixes are surfaced first as **Quick Wins**.
+
+### Audit request lifecycle
+
+```mermaid
+flowchart TD
+    User(["User / API Client"]) --> B{Which path?}
+
+    B -->|Async web| C["/audit/start"]
+    C --> D["Job created (pending)"]
+    D --> E["Background task: crawling"]
+    E --> F{"Pages found?"}
+    F -->|No| G["Job: error"]
+    F -->|Yes| H["Analyzing\nSEO · UX · Trust"]
+    H --> I["Scoring + quick wins"]
+    I --> J["Generate HTML report"]
+    J --> K["Job: done"]
+
+    User -->|Poll| L["/audit/status"]
+    L --> M{Status?}
+    M -->|pending / running| L
+    M -->|done| N["/audit/result → HTML report"]
+
+    B -->|Sync / CLI| O["/audit/json or cli.py"]
+    O --> P["Crawl → Analyze → Score"]
+    P --> Q["JSON response"]
+```
 
 ---
 
@@ -153,6 +179,65 @@ class MyAnalyzer(BaseAnalyzer):
 └── examples/
     ├── sample-report.html
     └── sample-report.json
+```
+
+### Software architecture
+
+```mermaid
+graph TD
+    subgraph Clients["Clients"]
+        Browser["Browser"]
+        CLIClient["cli.py"]
+        APIClient["API Client"]
+    end
+
+    subgraph AppLayer["app.py — FastAPI"]
+        AsyncRoutes["Async routes\n/audit/start · /audit/status · /audit/result"]
+        SyncRoute["Sync route\n/audit/json"]
+        JobStore["In-memory job store"]
+    end
+
+    subgraph CrawlerPkg["crawler/"]
+        CrawlerBFS["crawler.py\nBFS, same-domain"]
+        ParserBS["parser.py\nBeautifulSoup"]
+    end
+
+    subgraph AnalyzerPkg["analyzers/"]
+        Runner["runner.py"]
+        SEOAna["seo.py\nMeta · H1 · alt text"]
+        UXAna["ux.py\nPage weight · JS · scroll"]
+        TrustAna["trust.py\nEndpoints · forms · URLs"]
+    end
+
+    subgraph CorePkg["Core"]
+        ScoringMod["scoring.py\ncompute_scores · get_quick_wins"]
+        ModelsMod["models.py\nPageData · AuditIssue\nAuditScores · AuditReport"]
+        ConfigMod["config.py"]
+    end
+
+    subgraph ReportPkg["report/"]
+        Generator["generator.py"]
+        Jinja["Jinja2 templates\nreport.html · index.html"]
+    end
+
+    Browser --> AsyncRoutes
+    APIClient --> AsyncRoutes
+    APIClient --> SyncRoute
+    CLIClient --> SyncRoute
+    AsyncRoutes --> JobStore
+    AsyncRoutes --> CrawlerBFS
+    SyncRoute --> CrawlerBFS
+    CrawlerBFS --> ParserBS
+    ParserBS -->|"List[PageData]"| Runner
+    Runner --> SEOAna & UXAna & TrustAna
+    SEOAna & UXAna & TrustAna -->|"List[AuditIssue]"| ScoringMod
+    ScoringMod -->|AuditScores| Generator
+    Runner -->|"List[AuditIssue]"| Generator
+    Generator --> Jinja
+    Jinja -->|HTML| AsyncRoutes
+    ConfigMod --> CrawlerBFS
+    ConfigMod --> AsyncRoutes
+    ModelsMod -.->|shared types| CrawlerPkg & AnalyzerPkg & CorePkg & ReportPkg
 ```
 
 ---
