@@ -79,7 +79,7 @@ def generate_html_report(report: AuditReport) -> str:
         pages_crawled=report.pages_crawled,
         seo_score=scores.seo_health,
         ux_score=scores.ux_clarity,
-        trust_score=scores.trust_exposure,
+        trust_score=scores.trust_safety,
         issues_by_category=grouped,
         quick_wins=quick_win_rollups,
         total_issues=len(rollups),
